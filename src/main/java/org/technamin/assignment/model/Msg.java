@@ -1,7 +1,6 @@
 package org.technamin.assignment.model;
 
 public class Msg {
-
     private String queue;
     private Long deliveryTag;
     private Information msg;

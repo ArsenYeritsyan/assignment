@@ -2,29 +2,25 @@ package org.technamin.assignment.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.Date;
 import java.util.Objects;
 
 @Entity(value = "items", noClassnameStored = true)
 public class Item implements Serializable {
     @Id
-    @Property("doc_id")
     @JsonIgnore
     private ObjectId id;
-    @JsonProperty("doc_id")
+
+    @Property("doc_id")
     private int docId;
     private Date creationDate;
     private Date lastChange;
 
-        @Version
-//    @Indexed
-//    @IndexOptions(unique = true)
+    @Version
     private Long seq;
     private String data;
     private String time;
@@ -66,7 +62,7 @@ public class Item implements Serializable {
     }
 
 
-    public int getDoc_id() {
+    public int getDocId() {
         return docId;
     }
 

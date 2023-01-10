@@ -7,9 +7,14 @@ import org.technamin.assignment.model.Msg;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RabbitMQPublisher {
-
+    private static final Logger logger = Logger.getLogger(RabbitMQPublisher.class.toString());
+    private static final String RE_SEND_MAX_TIME = "Re-Send touch max time, [%s] \n";
+    private static final String SUCCESS = "Send [%s] -  Success \n";
+    private static final String RE_SEND = "Re-Send [%s] \n";
     private final SortedMap<Long, Msg> nackMsg = new TreeMap<>();
     private final Channel channel;
 
@@ -18,6 +23,17 @@ public class RabbitMQPublisher {
         enablePublishConfirm(channel);
         declareAe(channel);
         declareExAndQueue(channel);
+    }
+
+    public void sendMsg(Msg msg) throws IOException {
+        if (msg.getQueue().equals("")) {
+            msg.setQueue(RabbitMQConfig.BASIC_DEMO_QUEUE);
+        }
+        msg.setDeliveryTag(channel.getNextPublishSeqNo());
+        msg.setSendAmount(msg.getSendAmount() + 1);
+        nackMsg.put(msg.getDeliveryTag(), msg);
+        channel.basicPublish(RabbitMQConfig.BASIC_DEMO_EX, msg.getQueue(),
+                false, null, msg.getMsg().toString().getBytes());
     }
 
     private void enablePublishConfirm(Channel channel) throws IOException {
@@ -34,9 +50,8 @@ public class RabbitMQPublisher {
             msgs = Collections.singleton(nackMsg.get(deliveryTag));
             nackMsg.remove(deliveryTag);
         }
-
         for (Msg msg : msgs) {
-            System.out.printf("Send [%s][%s] Success\n", msg.getDeliveryTag(), msg.getMsg());
+            logger.log(Level.INFO, (String.format(SUCCESS, msg.getQueue())), msg.getMsg().toString());
         }
     }
 
@@ -49,14 +64,12 @@ public class RabbitMQPublisher {
             msgs = Collections.singleton(nackMsg.get(deliveryTag));
             nackMsg.remove(deliveryTag);
         }
-
-        // re-send
         for (Msg msg : msgs) {
             if (msg.getDeliveryTag() > 3) {
-                System.out.printf("Re-Send touch max time, [%s][%s]\n", msg.getDeliveryTag(), msg.getMsg());
+                logger.log(Level.INFO, String.format(RE_SEND_MAX_TIME, msg.getDeliveryTag()), msg.getMsg());
                 continue;
             }
-            System.out.printf("Re-Send [%s][%s]\n", msg.getDeliveryTag(), msg.getMsg());
+            logger.log(Level.INFO, String.format(RE_SEND, msg.getDeliveryTag()), msg.getMsg());
             sendMsg(msg);
         }
     }
@@ -88,16 +101,5 @@ public class RabbitMQPublisher {
                 true, false, false, null);
 
         channel.queueBind(RabbitMQConfig.BASIC_DEMO_AE, RabbitMQConfig.BASIC_DEMO_AE, "");
-    }
-
-    public void sendMsg(Msg msg) throws IOException {
-        if (msg.getQueue().equals("")) {
-            msg.setQueue(RabbitMQConfig.BASIC_DEMO_QUEUE);
-        }
-        msg.setDeliveryTag(channel.getNextPublishSeqNo());
-        msg.setSendAmount(msg.getSendAmount() + 1);
-        nackMsg.put(msg.getDeliveryTag(), msg);
-        channel.basicPublish(RabbitMQConfig.BASIC_DEMO_EX, msg.getQueue(),
-                false, null, msg.getMsg().toString().getBytes());
     }
 }

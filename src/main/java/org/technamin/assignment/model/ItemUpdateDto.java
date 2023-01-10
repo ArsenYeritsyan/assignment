@@ -1,9 +1,5 @@
 package org.technamin.assignment.model;
 
-import org.bson.types.ObjectId;
-
-import java.math.BigInteger;
-
 public class ItemUpdateDto {
     private int doc_id;
     private String fieldName;

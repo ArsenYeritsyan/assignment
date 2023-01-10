@@ -7,7 +7,12 @@ import org.technamin.assignment.config.RabbitMQPublisher;
 import org.technamin.assignment.model.Information;
 import org.technamin.assignment.model.Msg;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class RabbitMQService {
+    private static final Logger logger = Logger.getLogger(RabbitMQService.class.toString());
+    private static final String SENT = " Sent !!! ";
 
     public static void sendLog(Information info) {
         ConnectionFactory factory = RabbitMQConfig.connectionFactory();
@@ -21,7 +26,7 @@ public class RabbitMQService {
             message.setMsg(info);
             message.setQueue(queue);
             publisher.sendMsg(message);
-            System.out.println("Send!!!");
+            logger.log(Level.INFO, SENT);
         } catch (Exception e) {
             e.printStackTrace();
         }

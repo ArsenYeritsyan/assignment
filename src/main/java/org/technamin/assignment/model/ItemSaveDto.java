@@ -1,12 +1,10 @@
 package org.technamin.assignment.model;
 
-import java.math.BigInteger;
-
 public class ItemSaveDto {
-    private int id;
-    private Long seq;
-    private String data;
-    private String time;
+    private final int id;
+    private final Long seq;
+    private final String data;
+    private final String time;
 
     public ItemSaveDto(int id, Long seq, String data, String time) {
         this.id = id;

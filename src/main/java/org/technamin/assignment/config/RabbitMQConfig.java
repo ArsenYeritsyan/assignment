@@ -17,7 +17,6 @@ public class RabbitMQConfig {
     public static final String BASIC_DEMO_QUEUE_2 = "basic-queue-2";
 
     public static ConnectionFactory connectionFactory() {
-
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(HOST);
         factory.setUsername(USERNAME);

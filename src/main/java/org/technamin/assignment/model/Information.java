@@ -1,26 +1,31 @@
 package org.technamin.assignment.model;
 
-import org.bson.types.ObjectId;
-
-import java.math.BigInteger;
-
 public class Information {
-    private int doc_id;
-    private UpdateType updateType;
-    private String fieldName;
+    private final int docId;
+    private final UpdateType updateType;
+    private final String fieldName;
     private String fieldUpdateValue;
 
-    public Information(int doc_id, UpdateType updateType, String fieldName) {
-        this.doc_id = doc_id;
+    public Information(int docId, UpdateType updateType, String fieldName) {
+        this.docId = docId;
         this.updateType = updateType;
         this.fieldName = fieldName;
     }
 
-    public Information(int doc_id, UpdateType updateType, String fieldName, String fieldUpdateValue) {
-        this.doc_id = doc_id;
+    public Information(int docId, UpdateType updateType, String fieldName, String fieldUpdateValue) {
+        this.docId = docId;
         this.updateType = updateType;
         this.fieldName = fieldName;
         this.fieldUpdateValue = fieldUpdateValue;
+    }
+
+    @Override
+    public String toString() {
+        return "Log Information {" +
+                "doc_id=" + docId +
+                ", updateType=" + updateType +
+                ", fieldName='" + fieldName + '\'' +
+                '}';
     }
 }
 

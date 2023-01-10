@@ -12,6 +12,7 @@ services:
     links:
       - mongodb:mongodb
       - rabbitmq:rabbitmq
+    network_mode: host
 
   mongodb:
     image: mongo:latest
