@@ -1,54 +1,53 @@
 package org.technamin.assignment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.technamin.assignment.config.HttpClientConfig;
+import org.technamin.assignment.config.ItemsRepository;
 import org.technamin.assignment.config.RabbitMQConsumer;
-import org.technamin.assignment.model.*;
+import org.technamin.assignment.model.Information;
+import org.technamin.assignment.model.Item;
+import org.technamin.assignment.model.UpdateType;
 import org.technamin.assignment.service.MongoItemService;
 import org.technamin.assignment.service.RabbitMQService;
 
-import java.net.http.HttpResponse;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Application {
-    private static final Logger logger = Logger.getLogger(Application.class.toString());
-    private static final ObjectMapper mapper = new ObjectMapper();
-    private static final String UPDATE_CHECK = "Checking Updated :: ";
+    private static final Map<Integer, DocMetadata> map = new ConcurrentHashMap<>();
+    private static final MongoItemService mongoService = new MongoItemService();
 
     public static void main(String[] args) {
-        MongoItemService mongoService = new MongoItemService();
-        HttpResponse<String> response = HttpClientConfig.INSTANCE.getResponse();
 
-        mapModelFromJson(response.body())
-                .stream()
-                .distinct()
+        final var items = ItemsRepository.INSTANCE.getItems();
+
+        items.stream()
                 .parallel()
-                .forEachOrdered((Item info) -> {
-                    RabbitMQService.sendLog(new Information(info.getDocId(), UpdateType.SAVE, info.getData()));
-                    mongoService.save(info);
+                .forEach((Item item) -> {
+                    final var docMetadata = map.computeIfAbsent(item.getDocId(), integer -> new DocMetadata());
+                    final var seq = item.getSeq();
+                    if (docMetadata.currentSeq.get() == seq) {
+                        Item currentItem = item;
+                        do {
+                            processItem(currentItem);
+                            currentItem = docMetadata.availableItems.remove(docMetadata.currentSeq.incrementAndGet());
+                        } while (currentItem != null);
+                    } else {
+                        docMetadata.availableItems.put(seq, item);
+                    }
                 });
-
-        mongoService.sendItemToSaveByRabbit(new ItemSaveDto(466, 99L, "fake_data", "1672816948529"));
-        mongoService.sendItemToUpdateByRabbit(new ItemUpdateDto(466, "data", "changed_data"));
-        logger.log(Level.WARNING, UPDATE_CHECK, mongoService.find("doc_id", 466).get(0).getData());
 
         RabbitMQConsumer.defaultConsumerInit();
     }
 
-    private static List<Item> mapModelFromJson(String jsonBody) {
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        List<Item> itemList = List.of();
-        try {
-            itemList = mapper.readValue(jsonBody, new TypeReference<List<Item>>() {
-            });
-        } catch (JsonProcessingException e) {
-            logger.log(Level.WARNING, e.getCause().toString());
-        }
-        return itemList;
+    private static void processItem(Item item) {
+        RabbitMQService.sendLog(new Information(item.getDocId(), UpdateType.SAVE, item.getData()));
+        mongoService.save(item);
     }
+
+    private static class DocMetadata {
+
+        private final AtomicLong currentSeq = new AtomicLong();
+        private final Map<Long, Item> availableItems = new ConcurrentHashMap<>();
+    }
+
 }

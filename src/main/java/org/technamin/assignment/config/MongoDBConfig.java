@@ -9,18 +9,18 @@ import org.technamin.assignment.model.Item;
 
 public enum MongoDBConfig {
     INSTANCE;
-    //    private final String MONGO_HOST = "localhost";   -use without Docker
-    private static final String DOCKER_SERVER_URL = "mongodb";
-    private static final String DATABASE_NAME = "items";
-    private static final int SERVER_PORT = 27017;
+
     private final Datastore datastore;
 
-
     MongoDBConfig() {
-        ServerAddress sa = new ServerAddress(DOCKER_SERVER_URL, SERVER_PORT);
+        String mongoHost = System.getProperty("MONGO_HOST", "mongodb");
+        int mongoPort = Integer.parseInt(System.getProperty("MONGO_PORT", "27017"));
+        String database = System.getProperty("MONGO_DATABASE", "items");
+
+        ServerAddress sa = new ServerAddress(mongoHost, mongoPort);
         Morphia morphia = new Morphia();
         morphia.map(Item.class);
-        datastore = morphia.createDatastore(new MongoClient(sa), DATABASE_NAME);
+        datastore = morphia.createDatastore(new MongoClient(sa), database);
         datastore.ensureIndexes();
     }
 

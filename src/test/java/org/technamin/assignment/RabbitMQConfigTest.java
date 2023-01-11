@@ -17,7 +17,7 @@ class RabbitMQConfigTest {
     private static Channel channel;
 
     @Test
-    void consume() {
+    void shouldSendAndConsume() {
         String exchange = "Test Exchange";
         String message = "Message TEST";
         ConnectionFactory factory = new ConnectionFactory();

@@ -5,7 +5,8 @@ import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.technamin.assignment.config.MongoDBConfig;
-import org.technamin.assignment.model.*;
+import org.technamin.assignment.exceptions.MongoProcessException;
+import org.technamin.assignment.model.Item;
 
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -14,30 +15,15 @@ import java.util.logging.Logger;
 
 public class MongoItemService {
     private static final Logger logger = Logger.getLogger(MongoItemService.class.toString());
-    private static final String NOT_SAVED = "NOT_SAVED ::: ";
     private static final String UPDATED = "Updated ::: ";
     private static final String ID = "doc_id";
     private final Datastore datastore = MongoDBConfig.INSTANCE.getDatastore();
-
-    public void sendItemToSaveByRabbit(ItemSaveDto saveDto) {
-        Item toSave = new Item(saveDto.getId(), saveDto.getSeq(), saveDto.getData(), saveDto.getTime());
-        save(toSave);
-        Information information = new Information(saveDto.getId(), UpdateType.SAVE, toSave.getData());
-        RabbitMQService.sendLog(information);
-    }
-
-    public void sendItemToUpdateByRabbit(ItemUpdateDto updateDto) {
-        updateItemFieldById(updateDto.getDocId(), updateDto.getFieldName(), updateDto.getFieldUpdateValue());
-        Information information = new Information(updateDto.getDocId(), UpdateType.UPDATE,
-                updateDto.getFieldName(), updateDto.getFieldUpdateValue());
-        RabbitMQService.sendLog(information);
-    }
 
     public void save(Item entity) {
         try {
             datastore.save(entity);
         } catch (ConcurrentModificationException | DuplicateKeyException ex) {
-            logger.log(Level.INFO, NOT_SAVED, ex);
+            throw new MongoProcessException(ex);
         }
     }
 
@@ -63,11 +49,9 @@ public class MongoItemService {
         return datastore.find(Item.class).filter(key, value).asList();
     }
 
-
     public Item findById(int id) {
         return datastore.get(Item.class, id);
     }
-
 
     public List<Item> findAll() {
         Query<Item> qr = datastore.find(Item.class);
