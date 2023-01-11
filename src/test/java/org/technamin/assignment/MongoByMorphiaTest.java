@@ -10,7 +10,7 @@ import org.technamin.assignment.model.Item;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 
-class ApplicationTest {
+class MongoByMorphiaTest {
     private static final String MONGO_HOST = "localhost";
     private static final String DOCKER_MONGO_COLLECTION = "items";
     private static final int DOCKER_MONGO_PORT = 27017;

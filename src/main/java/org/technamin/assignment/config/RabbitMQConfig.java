@@ -3,7 +3,6 @@ package org.technamin.assignment.config;
 import com.rabbitmq.client.ConnectionFactory;
 
 public class RabbitMQConfig {
-
     //    public static final String HOST = "localhost";  -use without Docker
     public static final String DOCKER_HOST = "rabbitmq";
     public static final String USERNAME = "guest";

@@ -9,12 +9,11 @@ import org.technamin.assignment.model.Item;
 
 public enum MongoDBConfig {
     INSTANCE;
-
-    private final Datastore datastore;
     //    private final String MONGO_HOST = "localhost";   -use without Docker
-    private static final int SERVER_PORT = 27017;
     private static final String DOCKER_SERVER_URL = "mongodb";
     private static final String DATABASE_NAME = "items";
+    private static final int SERVER_PORT = 27017;
+    private final Datastore datastore;
 
 
     MongoDBConfig() {

@@ -19,14 +19,14 @@ public class MongoItemService {
     private static final String ID = "doc_id";
     private final Datastore datastore = MongoDBConfig.INSTANCE.getDatastore();
 
-    public void sendItemToSave(ItemSaveDto saveDto) {
+    public void sendItemToSaveByRabbit(ItemSaveDto saveDto) {
         Item toSave = new Item(saveDto.getId(), saveDto.getSeq(), saveDto.getData(), saveDto.getTime());
         save(toSave);
         Information information = new Information(saveDto.getId(), UpdateType.SAVE, toSave.getData());
         RabbitMQService.sendLog(information);
     }
 
-    public void sendItemToUpdate(ItemUpdateDto updateDto) {
+    public void sendItemToUpdateByRabbit(ItemUpdateDto updateDto) {
         updateItemFieldById(updateDto.getDocId(), updateDto.getFieldName(), updateDto.getFieldUpdateValue());
         Information information = new Information(updateDto.getDocId(), UpdateType.UPDATE,
                 updateDto.getFieldName(), updateDto.getFieldUpdateValue());
