@@ -1,22 +1,30 @@
 package org.technamin.assignment.service;
 
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 import org.technamin.assignment.config.RabbitMQConfig;
 import org.technamin.assignment.config.RabbitMQPublisher;
 import org.technamin.assignment.model.Information;
 import org.technamin.assignment.model.Msg;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RabbitMQService {
     private static final Logger logger = Logger.getLogger(RabbitMQService.class.toString());
+    private static Connection connection = null;
+
+    static {
+        try {
+            connection = RabbitMQConfig.connectionFactory().newConnection();
+        } catch (IOException | TimeoutException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void sendLog(Information info) {
-        ConnectionFactory factory = RabbitMQConfig.connectionFactory();
         try {
-            Connection connection = factory.newConnection();
             RabbitMQPublisher publisher = new RabbitMQPublisher(connection);
             String queue = RabbitMQConfig.BASIC_DEMO_QUEUE;
 

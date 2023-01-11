@@ -17,17 +17,17 @@ class RabbitMQConfigTest {
     private static Channel channel;
 
     @Test
-    public void consume() {
-        String exchange = "MyExchange";
+    void consume() {
+        String exchange = "Test Exchange";
         String message = "Message TEST";
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
-        try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
-            channel.exchangeDeclare(exchange, "fanout");
-            do {
-                channel.basicPublish(exchange, "", null, message.getBytes());
-            } while (!message.equalsIgnoreCase("Quit"));
+        factory.setConnectionTimeout(30000);
+        try {
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
+            channel.exchangeDeclare(exchange, "assignment");
+            channel.basicPublish(exchange, "", null, message.getBytes());
 
             String queueName = channel.queueDeclare().getQueue();
             channel.queueBind(queueName, exchange, "");
@@ -38,7 +38,6 @@ class RabbitMQConfigTest {
                 assertNotNull(getMessage);
                 assertEquals(getMessage, message);
             };
-
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
