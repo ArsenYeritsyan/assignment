@@ -1,18 +1,18 @@
 package org.technamin.assignment.model;
 
 public class ItemUpdateDto {
-    private int doc_id;
+    private int docId;
     private String fieldName;
     private String fieldUpdateValue;
 
-    public ItemUpdateDto(int doc_id, String fieldName, String fieldUpdateValue) {
-        this.doc_id = doc_id;
+    public ItemUpdateDto(int docId, String fieldName, String fieldUpdateValue) {
+        this.docId = docId;
         this.fieldName = fieldName;
         this.fieldUpdateValue = fieldUpdateValue;
     }
 
-    public int getDoc_id() {
-        return doc_id;
+    public int getDocId() {
+        return docId;
     }
 
     public String getFieldName() {

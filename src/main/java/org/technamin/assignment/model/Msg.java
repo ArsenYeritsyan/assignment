@@ -3,7 +3,7 @@ package org.technamin.assignment.model;
 public class Msg {
     private String queue;
     private Long deliveryTag;
-    private Information msg;
+    private Information information;
     private Integer sendAmount = 0;
 
     public String getQueue() {
@@ -23,11 +23,11 @@ public class Msg {
     }
 
     public Information getMsg() {
-        return msg;
+        return information;
     }
 
     public void setMsg(Information msg) {
-        this.msg = msg;
+        this.information = msg;
     }
 
     public Integer getSendAmount() {

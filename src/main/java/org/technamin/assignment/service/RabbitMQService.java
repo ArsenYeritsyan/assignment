@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 public class RabbitMQService {
     private static final Logger logger = Logger.getLogger(RabbitMQService.class.toString());
-    private static final String SENT = " Sent !!! ";
 
     public static void sendLog(Information info) {
         ConnectionFactory factory = RabbitMQConfig.connectionFactory();
@@ -26,13 +25,11 @@ public class RabbitMQService {
             message.setMsg(info);
             message.setQueue(queue);
             publisher.sendMsg(message);
-            logger.log(Level.INFO, SENT);
+            logger.log(Level.INFO, info.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-
 }
 
 

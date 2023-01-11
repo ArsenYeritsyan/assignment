@@ -11,20 +11,17 @@ import java.util.logging.Logger;
 public class RabbitMQConsumer {
     private static final Logger logger = Logger.getLogger(RabbitMQConsumer.class.toString());
     private static final ConnectionFactory factory = RabbitMQConfig.connectionFactory();
-    private static final String CONSUMED = " Consumed :: ";
-    private static DefaultConsumer consumer;
-    private static Connection connection;
     private static Channel channel;
 
     public static void defaultConsumerInit() {
         try {
-            connection = factory.newConnection();
+            Connection connection = factory.newConnection();
             channel = connection.createChannel();
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
 
-        consumer = new DefaultConsumer(channel) {
+        DefaultConsumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(
                     String consumerTag,
@@ -32,7 +29,7 @@ public class RabbitMQConsumer {
                     AMQP.BasicProperties properties,
                     byte[] body) {
                 String message = new String(body, StandardCharsets.UTF_8);
-                logger.log(Level.INFO, CONSUMED, message);
+                logger.log(Level.INFO, message);
             }
         };
         try {

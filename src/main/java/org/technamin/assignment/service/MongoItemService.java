@@ -4,9 +4,8 @@ import com.mongodb.DuplicateKeyException;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
-import org.technamin.assignment.config.MongoDBHelper;
-import org.technamin.assignment.config.RabbitMQConsumer;
-import org.technamin.assignment.model.Item;
+import org.technamin.assignment.config.MongoDBConfig;
+import org.technamin.assignment.model.*;
 
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -14,11 +13,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MongoItemService {
-    private static final Logger logger = Logger.getLogger(RabbitMQConsumer.class.toString());
-    private final Datastore datastore = MongoDBHelper.INSTANCE.getDatastore();
-    private static final String NOT_SAVED = "NOT_SAVED :.: ";
-    private static final String UPDATED = "Updated :.: ";
+    private static final Logger logger = Logger.getLogger(MongoItemService.class.toString());
+    private static final String NOT_SAVED = "NOT_SAVED ::: ";
+    private static final String UPDATED = "Updated ::: ";
     private static final String ID = "doc_id";
+    private final Datastore datastore = MongoDBConfig.INSTANCE.getDatastore();
+
+    public void sendItemToSave(ItemSaveDto saveDto) {
+        Item toSave = new Item(saveDto.getId(), saveDto.getSeq(), saveDto.getData(), saveDto.getTime());
+        save(toSave);
+        Information information = new Information(saveDto.getId(), UpdateType.SAVE, toSave.getData());
+        RabbitMQService.sendLog(information);
+    }
+
+    public void sendItemToUpdate(ItemUpdateDto updateDto) {
+        updateItemFieldById(updateDto.getDocId(), updateDto.getFieldName(), updateDto.getFieldUpdateValue());
+        Information information = new Information(updateDto.getDocId(), UpdateType.UPDATE,
+                updateDto.getFieldName(), updateDto.getFieldUpdateValue());
+        RabbitMQService.sendLog(information);
+    }
 
     public void save(Item entity) {
         try {

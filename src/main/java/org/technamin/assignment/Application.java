@@ -23,7 +23,6 @@ public class Application {
     private static final Logger logger = Logger.getLogger(Application.class.toString());
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final String UPDATE_CHECK = "Checking Updated :: ";
-    private static final Job job = new Job();
 
     public static void main(String[] args) {
         MongoItemService mongoService = new MongoItemService();
@@ -32,13 +31,14 @@ public class Application {
         mapModelFromJson(response.body())
                 .stream()
                 .distinct()
+                .parallel()
                 .forEachOrdered((Item info) -> {
                     RabbitMQService.sendLog(new Information(info.getDocId(), UpdateType.SAVE, info.getData()));
                     mongoService.save(info);
                 });
 
-        job.sendItemToSave(new ItemSaveDto(466, 99L, "fake_data", "1672816948529"));
-        job.sendItemToUpdate(new ItemUpdateDto(466, "data", "changed_data"));
+        mongoService.sendItemToSave(new ItemSaveDto(466, 99L, "fake_data", "1672816948529"));
+        mongoService.sendItemToUpdate(new ItemUpdateDto(466, "data", "changed_data"));
         logger.log(Level.WARNING, UPDATE_CHECK, mongoService.find("doc_id", 466).get(0).getData());
 
         RabbitMQConsumer.defaultConsumerInit();
@@ -50,10 +50,10 @@ public class Application {
         do {
             try {
                 response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            } catch (InterruptedException | IOException e) {
+            } catch (IOException | InterruptedException e) {
                 logger.log(Level.WARNING, e.getCause().toString());
             }
-        } while (response != null && !response.body().isBlank());
+        } while (response != null && response.body().isBlank());
         return response;
     }
 

@@ -2,6 +2,7 @@ package org.technamin.assignment.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
 
@@ -16,6 +17,7 @@ public class Item implements Serializable {
     private ObjectId id;
 
     @Property("doc_id")
+    @JsonProperty("doc_id")
     private int docId;
     private Date creationDate;
     private Date lastChange;
