@@ -79,13 +79,11 @@ public class RabbitMQPublisher {
         args.put("alternate-exchange", RabbitMQConfig.BASIC_DEMO_AE);
         channel.exchangeDeclare(RabbitMQConfig.BASIC_DEMO_EX,
                 BuiltinExchangeType.DIRECT, true, false, args);
-
         channel.queueDeclare(
                 RabbitMQConfig.BASIC_DEMO_QUEUE,
                 true, false, false, null);
         channel.queueBind(RabbitMQConfig.BASIC_DEMO_QUEUE, RabbitMQConfig.BASIC_DEMO_EX,
                 RabbitMQConfig.BASIC_DEMO_QUEUE);
-
         channel.queueDeclare(
                 RabbitMQConfig.BASIC_DEMO_QUEUE_2,
                 true, false, false, null);
@@ -96,10 +94,8 @@ public class RabbitMQPublisher {
     private void declareAe(Channel channel) throws IOException {
         channel.exchangeDeclare(RabbitMQConfig.BASIC_DEMO_AE,
                 BuiltinExchangeType.FANOUT, true, false, null);
-
         channel.queueDeclare(RabbitMQConfig.BASIC_DEMO_AE,
                 true, false, false, null);
-
         channel.queueBind(RabbitMQConfig.BASIC_DEMO_AE, RabbitMQConfig.BASIC_DEMO_AE, "");
     }
 }
