@@ -1,7 +1,7 @@
 package org.technamin.assignment;
 
 import org.junit.jupiter.api.Test;
-import org.technamin.assignment.config.ItemsRepository;
+import org.technamin.assignment.service.ItemsRepository;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;

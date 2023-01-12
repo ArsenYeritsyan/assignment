@@ -1,4 +1,4 @@
-package org.technamin.assignment.model;
+package org.technamin.assignment;
 
 public class ItemSaveDto {
     private final int id;

@@ -3,7 +3,6 @@ package org.technamin.assignment.service;
 import com.mongodb.DuplicateKeyException;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.Query;
-import org.mongodb.morphia.query.UpdateOperations;
 import org.technamin.assignment.config.MongoDBConfig;
 import org.technamin.assignment.exceptions.MongoProcessException;
 import org.technamin.assignment.model.Item;
@@ -18,9 +17,9 @@ public class MongoItemService {
     private static final Logger logger = Logger.getLogger(MongoItemService.class.toString());
     private static final String UPDATED = "Updated ::: ";
     private static final String ID = "doc_id";
-    private static final String SEQ = "seq";
     private static final String DATA = "data";
     private static final String TIME = "time";
+    private static final String SEQ = "seq";
     private final Datastore datastore = MongoDBConfig.INSTANCE.getDatastore();
 
     public void save(Item entity) {
@@ -38,7 +37,7 @@ public class MongoItemService {
     }
 
     private void updateItemFieldsById(int id, Map<String, Object> fields) {
-        UpdateOperations<Item> updateOptions = datastore.createUpdateOperations(Item.class);
+        final var updateOptions = datastore.createUpdateOperations(Item.class);
         fields.forEach(updateOptions::set);
         datastore.update(createQuery().field(ID).equal(id), updateOptions);
         logger.log(Level.INFO, UPDATED, id);
@@ -49,7 +48,7 @@ public class MongoItemService {
     }
 
     public void updateItemFieldById(int id, String fieldName, String fieldUpdate) {
-        UpdateOperations<Item> updateOptions = datastore.createUpdateOperations(Item.class);
+        final var updateOptions = datastore.createUpdateOperations(Item.class);
         Item item = findOne(ID, id);
         if (item != null) {
             updateOptions.set(fieldName, fieldUpdate);
@@ -71,7 +70,7 @@ public class MongoItemService {
     }
 
     public List<Item> findAll() {
-        Query<Item> qr = datastore.find(Item.class);
+        final var qr = datastore.find(Item.class);
         return qr.asList();
     }
 

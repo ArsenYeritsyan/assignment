@@ -1,6 +1,8 @@
 package org.technamin.assignment.config;
 
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
 import org.technamin.assignment.exceptions.RabbitMQException;
 
 import java.io.IOException;
@@ -11,13 +13,14 @@ import java.util.logging.Logger;
 
 public class RabbitMQConsumer {
     private static final Logger logger = Logger.getLogger(RabbitMQConsumer.class.toString());
-    private static final ConnectionFactory factory = RabbitMQConfig.connectionFactory();
-    private static Channel channel;
+
+    private RabbitMQConsumer() {
+    }
 
     public static void defaultConsumerInit() {
         try {
-            Connection connection = factory.newConnection();
-            channel = connection.createChannel();
+            final var connection = RabbitMQConfig.connectionFactory().newConnection();
+            final var channel = connection.createChannel();
 
             DefaultConsumer consumer = new DefaultConsumer(channel) {
                 @Override
@@ -31,7 +34,8 @@ public class RabbitMQConsumer {
                 }
             };
 
-            channel.basicConsume(RabbitMQConfig.BASIC_DEMO_QUEUE, true, consumer);
+            channel.basicConsume(RabbitMQPublisher.BASIC_DEMO_QUEUE, true, consumer);
+            connection.close();
         } catch (IOException | TimeoutException e) {
             throw new RabbitMQException(e);
         }

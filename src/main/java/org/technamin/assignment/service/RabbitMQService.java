@@ -1,6 +1,5 @@
 package org.technamin.assignment.service;
 
-import com.rabbitmq.client.Connection;
 import org.technamin.assignment.config.RabbitMQConfig;
 import org.technamin.assignment.config.RabbitMQPublisher;
 import org.technamin.assignment.exceptions.RabbitMQException;
@@ -18,11 +17,14 @@ public class RabbitMQService {
 
     static {
         try {
-            Connection connection = RabbitMQConfig.connectionFactory().newConnection();
+            final var connection = RabbitMQConfig.connectionFactory().newConnection();
             publisher = new RabbitMQPublisher(connection);
         } catch (IOException | TimeoutException e) {
             throw new RabbitMQException(e);
         }
+    }
+
+    private RabbitMQService() {
     }
 
     public static void sendLog(Information info) {
@@ -30,7 +32,7 @@ public class RabbitMQService {
             Msg message = new Msg();
             message.setSendAmount(0);
             message.setMsg(info);
-            message.setQueue(RabbitMQConfig.BASIC_DEMO_QUEUE);
+            message.setQueue(RabbitMQPublisher.BASIC_DEMO_QUEUE);
             publisher.sendMsg(message);
             logger.log(Level.INFO, info.toString());
         } catch (Exception e) {

@@ -1,4 +1,4 @@
-package org.technamin.assignment.config;
+package org.technamin.assignment.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

@@ -11,7 +11,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RabbitMQPublisher {
+    public static final String BASIC_DEMO_QUEUE = System.getProperty("BASIC_DEMO_QUEUE", "information-update");
     private static final Logger logger = Logger.getLogger(RabbitMQPublisher.class.toString());
+    private static final String BASIC_DEMO_EX = System.getProperty("BASIC_DEMO_EX", "assignment-exchange");
+    private static final String BASIC_DEMO_QUEUE_2 = System.getProperty("BASIC_DEMO_QUEUE_2", "basic-queue-2");
+    private static final String BASIC_DEMO_AE = System.getProperty("BASIC_DEMO_AE", "basic-alternate-exchange");
     private static final String RE_SEND_MAX_TIME = "Re-Send touch max time, [%s] \n";
     private static final String SUCCESS = "Send [%s] -  Success \n";
     private static final String RE_SEND = "Re-Send [%s] \n";
@@ -27,12 +31,12 @@ public class RabbitMQPublisher {
 
     public void sendMsg(Msg msg) throws IOException {
         if (msg.getQueue().equals("")) {
-            msg.setQueue(RabbitMQConfig.BASIC_DEMO_QUEUE);
+            msg.setQueue(BASIC_DEMO_QUEUE);
         }
         msg.setDeliveryTag(channel.getNextPublishSeqNo());
         msg.setSendAmount(msg.getSendAmount() + 1);
         nackMsg.put(msg.getDeliveryTag(), msg);
-        channel.basicPublish(RabbitMQConfig.BASIC_DEMO_EX, msg.getQueue(),
+        channel.basicPublish(BASIC_DEMO_EX, msg.getQueue(),
                 false, null, msg.getMsg().toString().getBytes());
     }
 
@@ -76,26 +80,25 @@ public class RabbitMQPublisher {
 
     private void declareExAndQueue(Channel channel) throws IOException {
         Map<String, Object> args = new HashMap<>();
-        args.put("alternate-exchange", RabbitMQConfig.BASIC_DEMO_AE);
-        channel.exchangeDeclare(RabbitMQConfig.BASIC_DEMO_EX,
+        args.put("alternate-exchange", BASIC_DEMO_AE);
+        channel.exchangeDeclare(BASIC_DEMO_EX,
                 BuiltinExchangeType.DIRECT, true, false, args);
-        channel.queueDeclare(
-                RabbitMQConfig.BASIC_DEMO_QUEUE,
+        channel.queueDeclare(BASIC_DEMO_QUEUE,
                 true, false, false, null);
-        channel.queueBind(RabbitMQConfig.BASIC_DEMO_QUEUE, RabbitMQConfig.BASIC_DEMO_EX,
-                RabbitMQConfig.BASIC_DEMO_QUEUE);
+        channel.queueBind(BASIC_DEMO_QUEUE, BASIC_DEMO_EX,
+                BASIC_DEMO_QUEUE);
         channel.queueDeclare(
-                RabbitMQConfig.BASIC_DEMO_QUEUE_2,
+                BASIC_DEMO_QUEUE_2,
                 true, false, false, null);
-        channel.queueBind(RabbitMQConfig.BASIC_DEMO_QUEUE_2, RabbitMQConfig.BASIC_DEMO_EX,
-                RabbitMQConfig.BASIC_DEMO_QUEUE_2);
+        channel.queueBind(BASIC_DEMO_QUEUE_2, BASIC_DEMO_EX,
+                BASIC_DEMO_QUEUE_2);
     }
 
     private void declareAe(Channel channel) throws IOException {
-        channel.exchangeDeclare(RabbitMQConfig.BASIC_DEMO_AE,
+        channel.exchangeDeclare(BASIC_DEMO_AE,
                 BuiltinExchangeType.FANOUT, true, false, null);
-        channel.queueDeclare(RabbitMQConfig.BASIC_DEMO_AE,
+        channel.queueDeclare(BASIC_DEMO_AE,
                 true, false, false, null);
-        channel.queueBind(RabbitMQConfig.BASIC_DEMO_AE, RabbitMQConfig.BASIC_DEMO_AE, "");
+        channel.queueBind(BASIC_DEMO_AE, BASIC_DEMO_AE, "");
     }
 }

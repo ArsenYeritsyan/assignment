@@ -1,10 +1,10 @@
 package org.technamin.assignment;
 
-import org.technamin.assignment.config.ItemsRepository;
 import org.technamin.assignment.config.RabbitMQConsumer;
 import org.technamin.assignment.model.Information;
 import org.technamin.assignment.model.Item;
 import org.technamin.assignment.model.UpdateType;
+import org.technamin.assignment.service.ItemsRepository;
 import org.technamin.assignment.service.MongoItemService;
 import org.technamin.assignment.service.RabbitMQService;
 
