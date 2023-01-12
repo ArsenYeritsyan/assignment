@@ -1,9 +1,6 @@
 package org.technamin.assignment;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -26,7 +23,7 @@ class RabbitMQConfigTest {
         try {
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
-            channel.exchangeDeclare(exchange, "assignment");
+            channel.exchangeDeclare(exchange, BuiltinExchangeType.FANOUT);
             channel.basicPublish(exchange, "", null, message.getBytes());
 
             String queueName = channel.queueDeclare().getQueue();

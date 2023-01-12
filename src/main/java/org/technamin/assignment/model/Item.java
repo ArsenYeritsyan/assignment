@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
 
+@Indexes(@Index(options = @IndexOptions(unique = true), fields = {@Field("doc_id")}))
 @Entity(value = "items", noClassnameStored = true)
 public class Item implements Serializable {
     @Id
@@ -22,7 +23,7 @@ public class Item implements Serializable {
     private Date creationDate;
     private Date lastChange;
 
-    @Version
+    //    @Version
     private Long seq;
     private String data;
     private String time;
@@ -100,3 +101,5 @@ public class Item implements Serializable {
         this.seq = seq;
     }
 }
+
+

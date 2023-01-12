@@ -12,6 +12,9 @@ services:
     links:
       - mongodb:mongodb
       - rabbitmq:rabbitmq
+    environment:
+      - MONGO_HOST:mongodb
+      - RABBIT_HOST:rabbitmq
 
   mongodb:
     image: mongo:latest

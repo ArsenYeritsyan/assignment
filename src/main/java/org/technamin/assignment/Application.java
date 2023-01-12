@@ -8,6 +8,7 @@ import org.technamin.assignment.model.UpdateType;
 import org.technamin.assignment.service.MongoItemService;
 import org.technamin.assignment.service.RabbitMQService;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -17,8 +18,7 @@ public class Application {
     private static final MongoItemService mongoService = new MongoItemService();
 
     public static void main(String[] args) {
-
-        final var items = ItemsRepository.INSTANCE.getItems();
+        final List<Item> items = ItemsRepository.INSTANCE.getItems();
 
         items.stream()
                 .parallel()
@@ -36,16 +36,22 @@ public class Application {
                     }
                 });
 
+
         RabbitMQConsumer.defaultConsumerInit();
     }
 
     private static void processItem(Item item) {
-        RabbitMQService.sendLog(new Information(item.getDocId(), UpdateType.SAVE, item.getData()));
-        mongoService.save(item);
+        final Item byDocId = mongoService.findByDocId(item.getDocId());
+        if (byDocId == null) {
+            mongoService.save(item);
+            RabbitMQService.sendLog(new Information(item.getDocId(), UpdateType.SAVE, item.getData()));
+        } else {
+            final var updateItemFields = mongoService.updateItemFields(item);
+            RabbitMQService.sendLog(new Information(item.getDocId(), UpdateType.UPDATE, updateItemFields.toString()));
+        }
     }
 
     private static class DocMetadata {
-
         private final AtomicLong currentSeq = new AtomicLong();
         private final Map<Long, Item> availableItems = new ConcurrentHashMap<>();
     }

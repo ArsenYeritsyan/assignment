@@ -13,7 +13,7 @@ public enum MongoDBConfig {
     private final Datastore datastore;
 
     MongoDBConfig() {
-        String mongoHost = System.getProperty("MONGO_HOST", "mongodb");
+        String mongoHost = System.getProperty("MONGO_HOST", "localhost");
         int mongoPort = Integer.parseInt(System.getProperty("MONGO_PORT", "27017"));
         String database = System.getProperty("MONGO_DATABASE", "items");
 
