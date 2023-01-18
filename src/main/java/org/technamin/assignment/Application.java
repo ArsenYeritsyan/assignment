@@ -8,39 +8,52 @@ import org.technamin.assignment.service.ItemsRepository;
 import org.technamin.assignment.service.MongoItemService;
 import org.technamin.assignment.service.RabbitMQService;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Application {
     private static final Map<Integer, DocMetadata> map = new ConcurrentHashMap<>();
     private static final MongoItemService mongoService = new MongoItemService();
 
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
     public static void main(String[] args) {
         final List<Item> items = ItemsRepository.INSTANCE.getItems();
 
-        items.stream()
-                .parallel()
-                .forEach((Item item) -> {
-                    final var docMetadata = map.computeIfAbsent(item.getDocId(), integer -> new DocMetadata());
-                    final var seq = item.getSeq();
-                    if (docMetadata.currentSeq.get() == seq) {
-                        Item currentItem = item;
-                        do {
-                            processItem(currentItem);
-                            currentItem = docMetadata.availableItems.remove(docMetadata.currentSeq.incrementAndGet());
-                        } while (currentItem != null);
-                    } else {
-                        docMetadata.availableItems.put(seq, item);
-                    }
-                });
-
-
+        for (Item item : items) {
+            final var docMetadata = map.computeIfAbsent(item.getDocId(), integer -> new DocMetadata());
+            synchronized (docMetadata) {
+                docMetadata.queue.add(item);
+                if (!docMetadata.isRunning) {
+                    docMetadata.isRunning = true;
+                    EXECUTOR_SERVICE.submit(() -> processItemsOfDoc(docMetadata));
+                }
+            }
+        }
         RabbitMQConsumer.defaultConsumerInit();
+        EXECUTOR_SERVICE.shutdown();
     }
 
-    private static void processItem(Item item) {
+    private static void processItemsOfDoc(DocMetadata docMetadata) {
+        while (true) {
+            Item item;
+            synchronized (docMetadata) {
+                item = docMetadata.queue.poll();
+                if (item == null) {
+                    docMetadata.isRunning = false;
+                    return;
+                }
+                saveOrUpdateItem(item);
+            }
+        }
+    }
+
+    private static void saveOrUpdateItem(Item item) {
         final Item byDocId = mongoService.findByDocId(item.getDocId());
         if (byDocId == null) {
             mongoService.save(item);
@@ -52,8 +65,7 @@ public class Application {
     }
 
     private static class DocMetadata {
-        private final AtomicLong currentSeq = new AtomicLong();
-        private final Map<Long, Item> availableItems = new ConcurrentHashMap<>();
+        private final Queue<Item> queue = new LinkedList<>();
+        private boolean isRunning = false;
     }
-
 }
